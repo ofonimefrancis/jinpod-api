@@ -22,6 +22,8 @@ func main() {
 		WriteTimeout: 50 * time.Second,
 		ReadTimeout:  50 * time.Second,
 	}
-	router.Handle("/api/podcasts", handlers.GetAllPodcast(config)).Methods("GET")
+	router.Handle("/api/podcasts", handlers.GetAllPodcast(config)).Methods(http.MethodGet)
+	router.Handle("/api/podcast/{slug}", handlers.GetPodcast(config)).Methods(http.MethodGet)
+	router.Handle("/api/podcast", handlers.AddPodcast(config)).Methods(http.MethodPost)
 	log.Fatal(server.ListenAndServe())
 }

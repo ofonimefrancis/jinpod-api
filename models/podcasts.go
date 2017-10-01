@@ -16,7 +16,7 @@ type Podcasts struct {
 	Description string        `json:"description" bson:"description"`
 	Body        string        `json:"body" bson:"body"`
 	Likes       int
-	Author      Author
+	Author      Author    `json:"author,omitempty"`
 	PodcastsURL string    `json:"podcast_url" bson:"podcast_url"`
 	DateCreated time.Time `json:"dateCreated" bson:"dateCreated"`
 	DateUpdated time.Time `json:"dateUpdated" bson:"dateUpdated"`
@@ -82,9 +82,8 @@ func (p Podcasts) Remove(cfg *config.Config, slug string) error {
 func (p Podcasts) Add(cfg *config.Config) error {
 	session := cfg.Session.Copy()
 	defer session.Close()
-
 	if err := cfg.Database.C(PodcastCollection).Insert(p); err != nil {
-		log.Fatalf("%s %v\n", "Error Adding Podcast", err)
+		log.Fatal("Error: ", err)
 		return err
 	}
 	return nil
