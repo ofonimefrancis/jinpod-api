@@ -1,17 +1,11 @@
 package models
 
 import (
-	"errors"
 	"time"
 
 	"github.com/opiumated/jinPod/config"
 
 	"gopkg.in/mgo.v2/bson"
-)
-
-var (
-	//InvalidID An Invalid ID
-	InvalidID = errors.New("Invalid ID")
 )
 
 //Author Represents an Author writing a podcast
@@ -24,11 +18,18 @@ type Author struct {
 	DateUpdated time.Time     `json:"dateUpdated" bson:"dateUpdated"`
 }
 
-//Get Get's a single author based on the authors id
-func (a Author) Get(cfg *config.Config, id string) (Author, error) {
-	if !bson.IsObjectIdHex(id) {
-		return a, InvalidID
+//Add Adds an Author to our collection
+func (a Author) Add(cfg *config.Config) error {
+	session := cfg.Session.Copy()
+	defer session.Close()
+	if err := cfg.Database.C(AuthorCollection).Insert(a); err != nil {
+		return err
 	}
+	return nil
+}
+
+//Get Get's a single author based on the authors ID
+func (a Author) Get(cfg *config.Config, id string) (Author, error) {
 	var author Author
 	session := cfg.Session.Copy()
 	if err := cfg.Database.C(AuthorCollection).Find(bson.M{"_id": id}).One(&author); err != nil {
@@ -49,14 +50,23 @@ func (a Author) GetAll(cfg *config.Config) ([]*Author, error) {
 	return authors, nil
 }
 
-//Remove Removes an author from the collection
-func (a Author) Remove(cfg *config.Config, authorID string) error {
-	if !bson.IsObjectIdHex(authorID) {
-		return InvalidID
-	}
+//GetByName Get's an author through it's name
+func (a Author) GetByName(cfg *config.Config, name string) (Author, error) {
 	session := cfg.Session.Copy()
 	defer session.Close()
-	if err := cfg.Database.C(AuthorCollection).Remove(bson.M{"authorId": authorID}); err != nil {
+
+	var author Author
+	if err := cfg.Database.C(AuthorCollection).Find(bson.M{"name": name}).One(&author); err != nil {
+		return author, err
+	}
+	return author, nil
+}
+
+//Remove Removes an author from the collection
+func (a Author) Remove(cfg *config.Config, authorID string) error {
+	session := cfg.Session.Copy()
+	defer session.Close()
+	if err := cfg.Database.C(AuthorCollection).Remove(bson.M{"_id": authorID}); err != nil {
 		return err
 	}
 	return nil

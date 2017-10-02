@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -26,7 +25,6 @@ func GetAllPodcast(cfg *config.Config) http.Handler {
 		}
 
 		jsonBytes, err := json.Marshal(podcasts)
-		fmt.Println(string(jsonBytes))
 		if err != nil {
 			utils.ErrorWithJSON(w, "Error Marshaling JSON", http.StatusInternalServerError)
 		}
@@ -35,6 +33,7 @@ func GetAllPodcast(cfg *config.Config) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+//GetPodcast Gets a single podcast using the passed slug param
 func GetPodcast(cfg *config.Config) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		podcast, err := models.Podcasts{}.GetBySlug(cfg, mux.Vars(r)["slug"])
@@ -61,8 +60,6 @@ func AddPodcast(cfg *config.Config) http.Handler {
 		newPodcast.DateCreated = time.Now()
 		newPodcast.DateUpdated = time.Now()
 
-		fmt.Println(newPodcast)
-
 		err := newPodcast.Add(cfg)
 		if err != nil {
 			utils.ErrorWithJSON(w, "Error Adding Podcast", http.StatusInternalServerError)
@@ -85,8 +82,14 @@ func RemovePodcast(cfg *config.Config) http.Handler {
 			log.Fatal("Error Removing podcast ", err)
 			utils.ErrorWithJSON(w, "Error Removing podcast", http.StatusNotImplemented)
 		}
-		message := fmt.Sprintf("{message : %s}", "Successful")
-		fmt.Println(message)
+		res := &utils.Response{
+			Message: "Successfully Removed Podcast",
+		}
+		responseJSON, err := json.Marshal(res)
+		if err != nil {
+			utils.ErrorWithJSON(w, "Error Marshalling JSON", http.StatusNotImplemented)
+		}
+		utils.ResponseWithJSON(w, responseJSON, http.StatusOK)
 	}
 	return http.HandlerFunc(fn)
 }

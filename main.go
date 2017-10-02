@@ -22,9 +22,16 @@ func main() {
 		WriteTimeout: 50 * time.Second,
 		ReadTimeout:  50 * time.Second,
 	}
+	//Routes
 	router.Handle("/api/podcasts", handlers.GetAllPodcast(config)).Methods(http.MethodGet)
 	router.Handle("/api/podcast/{slug}", handlers.GetPodcast(config)).Methods(http.MethodGet)
 	router.Handle("/api/podcast", handlers.AddPodcast(config)).Methods(http.MethodPost)
 	router.Handle("/api/podcast/{slug}", handlers.RemovePodcast(config)).Methods(http.MethodDelete)
+
+	router.Handle("/api/author/{name}", handlers.GetAuthor(config)).Methods(http.MethodGet)
+	router.Handle("/api/authors", handlers.GetAllAuthors(config)).Methods(http.MethodGet)
+	//TODO: AddAuthor works but does not return a restful JSON to the user
+	router.Handle("/api/author", handlers.AddAuthor(config)).Methods(http.MethodPost)
+	router.Handle("/api/author/{id}", handlers.RemoveAuthor(config)).Methods(http.MethodDelete)
 	log.Fatal(server.ListenAndServe())
 }
