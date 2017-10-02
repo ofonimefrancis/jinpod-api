@@ -10,16 +10,16 @@ import (
 
 //Podcasts  Represents a podcast in the database
 type Podcasts struct {
-	ID          bson.ObjectId `json:"id" bson:"_id"`
+	ID          bson.ObjectId `json:"_id,omitempty" bson:"_id"`
 	Title       string        `json:"title" bson:"title"`
 	Slug        string        `json:"slug" bson:"slug"`
 	Description string        `json:"description" bson:"description"`
 	Body        string        `json:"body" bson:"body"`
-	Likes       int
-	Author      Author    `json:"author,omitempty"`
-	PodcastsURL string    `json:"podcast_url" bson:"podcast_url"`
-	DateCreated time.Time `json:"dateCreated" bson:"dateCreated"`
-	DateUpdated time.Time `json:"dateUpdated" bson:"dateUpdated"`
+	Likes       int           `json:"likes"`
+	Author      Author        `json:",omitempty" bson:",omitempty"`
+	PodcastsURL string        `json:"podcast_url" bson:"podcast_url"`
+	DateCreated time.Time     `json:"dateCreated" bson:"dateCreated"`
+	DateUpdated time.Time     `json:"dateUpdated" bson:"dateUpdated"`
 }
 
 type podCastLikes struct {
@@ -83,7 +83,7 @@ func (p Podcasts) Add(cfg *config.Config) error {
 	session := cfg.Session.Copy()
 	defer session.Close()
 	if err := cfg.Database.C(PodcastCollection).Insert(p); err != nil {
-		log.Fatal("Error: ", err)
+		log.Fatal("Error Adding a new podcast: ", err)
 		return err
 	}
 	return nil
@@ -95,7 +95,7 @@ func (p Podcasts) Update(cfg *config.Config, ID bson.ObjectId) error {
 	defer session.Close()
 	p.DateUpdated = time.Now()
 	if err := cfg.Database.C(PodcastCollection).Update(bson.M{"_id": ID}, p); err != nil {
-		log.Fatal("Error Updating podcast\n")
+		log.Fatal("Error Updating podcast")
 		return err
 	}
 	return nil

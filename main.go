@@ -18,12 +18,13 @@ func main() {
 	router := mux.NewRouter()
 	server := &http.Server{
 		Handler:      router,
-		Addr:         "127.0.0.1:3300",
+		Addr:         "127.0.0.1:3400",
 		WriteTimeout: 50 * time.Second,
 		ReadTimeout:  50 * time.Second,
 	}
 	router.Handle("/api/podcasts", handlers.GetAllPodcast(config)).Methods(http.MethodGet)
 	router.Handle("/api/podcast/{slug}", handlers.GetPodcast(config)).Methods(http.MethodGet)
 	router.Handle("/api/podcast", handlers.AddPodcast(config)).Methods(http.MethodPost)
+	router.Handle("/api/podcast/{slug}", handlers.RemovePodcast(config)).Methods(http.MethodDelete)
 	log.Fatal(server.ListenAndServe())
 }

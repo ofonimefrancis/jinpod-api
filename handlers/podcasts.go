@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/mgo.v2/bson"
+
 	"github.com/gorilla/mux"
 	slugify "github.com/metal3d/go-slugify"
 	"github.com/opiumated/jinPod/config"
@@ -50,6 +52,7 @@ func AddPodcast(cfg *config.Config) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		var newPodcast models.Podcasts
+		newPodcast.ID = bson.NewObjectId()
 		newPodcast.Title = r.FormValue("title")
 		newPodcast.Slug = slugify.Marshal(strings.ToLower(r.FormValue("title")))
 		newPodcast.Body = r.FormValue("body")
@@ -57,6 +60,8 @@ func AddPodcast(cfg *config.Config) http.Handler {
 		newPodcast.PodcastsURL = r.FormValue("podcast_url")
 		newPodcast.DateCreated = time.Now()
 		newPodcast.DateUpdated = time.Now()
+
+		fmt.Println(newPodcast)
 
 		err := newPodcast.Add(cfg)
 		if err != nil {
@@ -68,6 +73,20 @@ func AddPodcast(cfg *config.Config) http.Handler {
 			utils.ErrorWithJSON(w, "Error Decoding JSON", http.StatusNoContent)
 		}
 		utils.ResponseWithJSON(w, marshalledJSON, http.StatusOK)
+	}
+	return http.HandlerFunc(fn)
+}
+
+//RemovePodcast Removes a podcast from the collection
+func RemovePodcast(cfg *config.Config) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		err := models.Podcasts{}.Remove(cfg, mux.Vars(r)["slug"])
+		if err != nil {
+			log.Fatal("Error Removing podcast ", err)
+			utils.ErrorWithJSON(w, "Error Removing podcast", http.StatusNotImplemented)
+		}
+		message := fmt.Sprintf("{message : %s}", "Successful")
+		fmt.Println(message)
 	}
 	return http.HandlerFunc(fn)
 }

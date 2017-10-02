@@ -20,7 +20,7 @@ type Config struct {
 func InitConfig() *Config {
 	var MONGOSERVER string
 	if os.Getenv("MONGOSERVER") == "" {
-		MONGOSERVER = "localhost:27017"
+		MONGOSERVER = "mongodb://opiumated:phoenix01@ds145283.mlab.com:45283/jinpod_database"
 	}
 	session, err := mgo.Dial(MONGOSERVER)
 
