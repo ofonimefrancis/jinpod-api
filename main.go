@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/opiumated/jinPod/config"
 	"github.com/opiumated/jinPod/handlers"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -16,12 +17,16 @@ func main() {
 
 	//Setup handlers {{ USing mux for this project }}
 	router := mux.NewRouter()
+	//Add default CORS
+	handler := cors.Default().Handler(router)
+
 	server := &http.Server{
-		Handler:      router,
+		Handler:      handler,
 		Addr:         "127.0.0.1:3400",
 		WriteTimeout: 50 * time.Second,
 		ReadTimeout:  50 * time.Second,
 	}
+
 	//Routes
 	router.Handle("/api/podcasts", handlers.GetAllPodcast(config)).Methods(http.MethodGet)
 	router.Handle("/api/podcast/{slug}", handlers.GetPodcast(config)).Methods(http.MethodGet)
