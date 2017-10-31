@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,10 +14,36 @@ import (
 	"github.com/opiumated/jinPod/utils"
 )
 
+//TODO: Reimplement the Adding Author Process
+//-- Empty required fields should fail
+//-- Don't add empty field to the database
+func validateAuthorsForm(r *http.Request) bool {
+	noOptionalValues := []string{"name", "avatar_url", "country"}
+	isValid := true
+	for index := range noOptionalValues {
+		if len(noOptionalValues[index]) == 0 {
+			isValid = false
+			break
+		}
+	}
+	return isValid
+}
+
 //AddAuthor adds an author to the collection
 func AddAuthor(cfg *config.Config) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
+		validForm := validateAuthorsForm(r)
+		if !validForm { //Form is not valid
+			invalidForm := &utils.Response{
+				Message: "Invalid Request. Fields cannot be empty",
+			}
+			resp, _ := json.Marshal(invalidForm)
+			utils.ResponseWithJSON(w, resp, http.StatusBadRequest)
+			fmt.Println(string(resp))
+			return
+		}
+
 		var author models.Author
 		author.ID = bson.NewObjectId()
 		author.Name = r.FormValue("name")
